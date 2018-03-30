@@ -9,38 +9,38 @@ import io.reactivex.internal.subscribers.BasicFuseableConditionalSubscriber;
 final class TraceContextConditionalSubscriber<T> extends BasicFuseableConditionalSubscriber<T, T> {
 
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextConditionalSubscriber(
       io.reactivex.internal.fuseable.ConditionalSubscriber actual,
       CurrentTraceContext currentTraceContext,
-      TraceContext invocationContext
+      TraceContext assemblyContext
   ) {
     super(actual);
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = invocationContext;
+    this.assemblyContext = assemblyContext;
   }
 
   @Override public boolean tryOnNext(T t) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       return actual.tryOnNext(t);
     }
   }
 
   @Override public void onNext(T t) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       actual.onNext(t);
     }
   }
 
   @Override public void onError(Throwable t) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       actual.onError(t);
     }
   }
 
   @Override public void onComplete() {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       actual.onComplete();
     }
   }

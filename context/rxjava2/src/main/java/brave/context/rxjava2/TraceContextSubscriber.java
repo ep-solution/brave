@@ -9,32 +9,32 @@ import io.reactivex.internal.subscribers.BasicFuseableSubscriber;
 final class TraceContextSubscriber<T> extends BasicFuseableSubscriber<T, T> {
 
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextSubscriber(
       org.reactivestreams.Subscriber actual,
       CurrentTraceContext currentTraceContext,
-      TraceContext invocationContext
+      TraceContext assemblyContext
   ) {
     super(actual);
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = invocationContext;
+    this.assemblyContext = assemblyContext;
   }
 
   @Override public void onNext(T t) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       actual.onNext(t);
     }
   }
 
   @Override public void onError(Throwable t) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       actual.onError(t);
     }
   }
 
   @Override public void onComplete() {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       actual.onComplete();
     }
   }

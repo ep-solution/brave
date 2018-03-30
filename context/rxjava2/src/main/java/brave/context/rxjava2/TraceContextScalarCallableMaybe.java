@@ -13,29 +13,30 @@ final class TraceContextScalarCallableMaybe<T> extends Maybe<T>
     implements ScalarCallable<T>, TraceContextGetter {
   final MaybeSource<T> source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextScalarCallableMaybe(
       MaybeSource<T> source,
-      CurrentTraceContext currentTraceContext
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
   ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override public TraceContext traceContext() {
-    return invocationContext;
+    return assemblyContext;
   }
 
   @Override protected void subscribeActual(MaybeObserver<? super T> s) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
-      source.subscribe(new Observer<>(s, currentTraceContext, invocationContext));
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
+      source.subscribe(new Observer<>(s, currentTraceContext, assemblyContext));
     }
   }
 
   @SuppressWarnings("unchecked") @Override public T call() {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       return ((ScalarCallable<T>) source).call();
     }
   }

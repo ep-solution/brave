@@ -12,30 +12,31 @@ import java.util.concurrent.Callable;
 final class TraceContextCallableMaybe<T> extends Maybe<T>
     implements Callable<T>, TraceContextGetter {
   @Override public TraceContext traceContext() {
-    return invocationContext;
+    return assemblyContext;
   }
 
   final MaybeSource<T> source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextCallableMaybe(
       MaybeSource<T> source,
-      CurrentTraceContext currentTraceContext
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
   ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override protected void subscribeActual(MaybeObserver<? super T> s) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
-      source.subscribe(new Observer<>(s, currentTraceContext, invocationContext));
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
+      source.subscribe(new Observer<>(s, currentTraceContext, assemblyContext));
     }
   }
 
   @SuppressWarnings("unchecked") @Override public T call() throws Exception {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       return ((Callable<T>) source).call();
     }
   }

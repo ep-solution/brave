@@ -12,30 +12,31 @@ import io.reactivex.internal.fuseable.ScalarCallable;
 final class TraceContextScalarCallableCompletable<T> extends Completable
     implements ScalarCallable<T>, TraceContextGetter {
   @Override public TraceContext traceContext() {
-    return invocationContext;
+    return assemblyContext;
   }
 
   final CompletableSource source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextScalarCallableCompletable(
       CompletableSource source,
-      CurrentTraceContext currentTraceContext
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
   ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override protected void subscribeActual(CompletableObserver s) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
-      source.subscribe(new Observer(s, currentTraceContext, invocationContext));
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
+      source.subscribe(new Observer(s, currentTraceContext, assemblyContext));
     }
   }
 
   @SuppressWarnings("unchecked") @Override public T call() {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       return ((ScalarCallable<T>) source).call();
     }
   }

@@ -11,63 +11,67 @@ import io.reactivex.internal.disposables.DisposableHelper;
 
 final class TraceContextMaybe<T> extends Maybe<T> implements TraceContextGetter {
   @Override public TraceContext traceContext() {
-    return invocationContext;
+    return assemblyContext;
   }
 
   final MaybeSource<T> source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
-  TraceContextMaybe(MaybeSource<T> source, CurrentTraceContext currentTraceContext) {
+  TraceContextMaybe(
+      MaybeSource<T> source,
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
+  ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override protected void subscribeActual(MaybeObserver<? super T> s) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
-      source.subscribe(new Observer<>(s, currentTraceContext, invocationContext));
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
+      source.subscribe(new Observer<>(s, currentTraceContext, assemblyContext));
     }
   }
 
   static final class Observer<T> implements MaybeObserver<T>, Disposable {
     final MaybeObserver<T> actual;
     final CurrentTraceContext currentTraceContext;
-    final TraceContext invocationContext;
+    final TraceContext assemblyContext;
     Disposable d;
 
     Observer(
         MaybeObserver actual,
         CurrentTraceContext currentTraceContext,
-        TraceContext invocationContext
+        TraceContext assemblyContext
     ) {
       this.actual = actual;
       this.currentTraceContext = currentTraceContext;
-      this.invocationContext = invocationContext;
+      this.assemblyContext = assemblyContext;
     }
 
     @Override public void onSubscribe(Disposable d) {
       if (!DisposableHelper.validate(this.d, d)) return;
       this.d = d;
-      try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+      try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
         actual.onSubscribe(this);
       }
     }
 
     @Override public void onError(Throwable t) {
-      try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+      try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
         actual.onError(t);
       }
     }
 
     @Override public void onSuccess(T value) {
-      try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+      try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
         actual.onSuccess(value);
       }
     }
 
     @Override public void onComplete() {
-      try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+      try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
         actual.onComplete();
       }
     }

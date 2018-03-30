@@ -37,8 +37,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ITRetrofitRxJava2 extends ITHttp {
   TraceContext context1 = TraceContext.newBuilder().traceId(1L).spanId(1L).build();
+  CurrentTraceContextAssemblyTracking contextTracking = CurrentTraceContextAssemblyTracking.create(
+      currentTraceContext
+  );
+
   @Rule public MockWebServer server = new MockWebServer();
   CurrentTraceContextObserver currentTraceContextObserver = new CurrentTraceContextObserver();
+
+  @Before public void setup() {
+    RxJavaPlugins.reset();
+    contextTracking.enable();
+  }
+
+  @After public void tearDown() {
+    contextTracking.disable();
+  }
 
   interface Service {
     @GET("/") Completable completable();
@@ -50,10 +63,6 @@ public class ITRetrofitRxJava2 extends ITHttp {
     @GET("/") Single<ResponseBody> single();
 
     @GET("/") Flowable<ResponseBody> flowable();
-  }
-
-  @Before @After public void setup() {
-    RxJavaPlugins.reset();
   }
 
   @Test public void createAsync_completable_success() {
@@ -89,8 +98,6 @@ public class ITRetrofitRxJava2 extends ITHttp {
   }
 
   private void rxjava_createAsync_success(BiConsumer<Service, TestObserver<Object>> subscriber) {
-    CurrentTraceContextAssemblyTracking.create(currentTraceContext).enable();
-
     TestObserver<Object> observer = new TestObserver<>(currentTraceContextObserver);
 
     Service service = service(retrofit2716(RxJava2CallAdapterFactory.createAsync()));
@@ -114,8 +121,6 @@ public class ITRetrofitRxJava2 extends ITHttp {
   }
 
   private void rx_createAsync_success(BiConsumer<Service, TestSubscriber<Object>> subscriber) {
-    CurrentTraceContextAssemblyTracking.create(currentTraceContext).enable();
-
     TestSubscriber<Object> observer = new TestSubscriber<>(currentTraceContextObserver);
 
     Service service = service(retrofit2716(RxJava2CallAdapterFactory.createAsync()));

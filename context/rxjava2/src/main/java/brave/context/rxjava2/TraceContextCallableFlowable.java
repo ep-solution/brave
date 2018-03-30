@@ -11,35 +11,36 @@ final class TraceContextCallableFlowable<T> extends Flowable<T>
     implements Callable<T>, TraceContextGetter {
   final Publisher<T> source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextCallableFlowable(
       Publisher<T> source,
-      CurrentTraceContext currentTraceContext
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
   ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override public TraceContext traceContext() {
-    return invocationContext;
+    return assemblyContext;
   }
 
   @Override protected void subscribeActual(org.reactivestreams.Subscriber<? super T> s) {
-    try (CurrentTraceContext.Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (CurrentTraceContext.Scope scope = currentTraceContext.newScope(assemblyContext)) {
       if (s instanceof ConditionalSubscriber) {
         source.subscribe(new TraceContextConditionalSubscriber<>(
-            (ConditionalSubscriber) s, currentTraceContext, invocationContext
+            (ConditionalSubscriber) s, currentTraceContext, assemblyContext
         ));
       } else {
-        source.subscribe(new TraceContextSubscriber<>(s, currentTraceContext, invocationContext));
+        source.subscribe(new TraceContextSubscriber<>(s, currentTraceContext, assemblyContext));
       }
     }
   }
 
   @SuppressWarnings("unchecked") @Override public T call() throws Exception {
-    try (CurrentTraceContext.Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (CurrentTraceContext.Scope scope = currentTraceContext.newScope(assemblyContext)) {
       return ((Callable<T>) source).call();
     }
   }

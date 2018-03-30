@@ -12,30 +12,31 @@ import io.reactivex.internal.fuseable.ScalarCallable;
 final class TraceContextScalarCallableSingle<T> extends Single<T>
     implements ScalarCallable<T>, TraceContextGetter {
   @Override public TraceContext traceContext() {
-    return invocationContext;
+    return assemblyContext;
   }
 
   final SingleSource<T> source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextScalarCallableSingle(
       SingleSource<T> source,
-      CurrentTraceContext currentTraceContext
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
   ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override protected void subscribeActual(SingleObserver<? super T> s) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
-      source.subscribe(new Observer<>(s, currentTraceContext, invocationContext));
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
+      source.subscribe(new Observer<>(s, currentTraceContext, assemblyContext));
     }
   }
 
   @SuppressWarnings("unchecked") @Override public T call() {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       return ((ScalarCallable<T>) source).call();
     }
   }

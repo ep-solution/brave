@@ -11,31 +11,32 @@ import io.reactivex.internal.fuseable.ConditionalSubscriber;
 final class TraceContextConnectableFlowable<T> extends ConnectableFlowable<T> {
   final ConnectableFlowable<T> source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextConnectableFlowable(
       ConnectableFlowable<T> source,
-      CurrentTraceContext currentTraceContext
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
   ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override protected void subscribeActual(org.reactivestreams.Subscriber<? super T> s) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       if (s instanceof ConditionalSubscriber) {
         source.subscribe(new TraceContextConditionalSubscriber<>(
-            (ConditionalSubscriber) s, currentTraceContext, invocationContext
+            (ConditionalSubscriber) s, currentTraceContext, assemblyContext
         ));
       } else {
-        source.subscribe(new TraceContextSubscriber<>(s, currentTraceContext, invocationContext));
+        source.subscribe(new TraceContextSubscriber<>(s, currentTraceContext, assemblyContext));
       }
     }
   }
 
   @Override public void connect(Consumer<? super Disposable> connection) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       source.connect(connection);
     }
   }

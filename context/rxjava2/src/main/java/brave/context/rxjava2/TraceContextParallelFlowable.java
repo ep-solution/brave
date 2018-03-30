@@ -10,20 +10,21 @@ import org.reactivestreams.Subscriber;
 final class TraceContextParallelFlowable<T> extends ParallelFlowable<T>
     implements TraceContextGetter {
   @Override public TraceContext traceContext() {
-    return invocationContext;
+    return assemblyContext;
   }
 
   final ParallelFlowable<T> source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
   TraceContextParallelFlowable(
       ParallelFlowable<T> source,
-      CurrentTraceContext currentTraceContext
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
   ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override public int parallelism() {
@@ -40,13 +41,13 @@ final class TraceContextParallelFlowable<T> extends ParallelFlowable<T>
       if (z instanceof ConditionalSubscriber) {
         parents[i] = new TraceContextConditionalSubscriber<>(
             (ConditionalSubscriber<? super T>) z,
-            currentTraceContext, invocationContext
+            currentTraceContext, assemblyContext
         );
       } else {
-        parents[i] = new TraceContextSubscriber<>(z, currentTraceContext, invocationContext);
+        parents[i] = new TraceContextSubscriber<>(z, currentTraceContext, assemblyContext);
       }
     }
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
       source.subscribe(parents);
     }
   }

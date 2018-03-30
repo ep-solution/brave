@@ -10,53 +10,57 @@ import io.reactivex.internal.observers.BasicFuseableObserver;
 
 final class TraceContextObservable<T> extends Observable<T> implements TraceContextGetter {
   @Override public TraceContext traceContext() {
-    return invocationContext;
+    return assemblyContext;
   }
 
   final ObservableSource<T> source;
   final CurrentTraceContext currentTraceContext;
-  final TraceContext invocationContext;
+  final TraceContext assemblyContext;
 
-  TraceContextObservable(ObservableSource<T> source, CurrentTraceContext currentTraceContext) {
+  TraceContextObservable(
+      ObservableSource<T> source,
+      CurrentTraceContext currentTraceContext,
+      TraceContext assemblyContext
+  ) {
     this.source = source;
     this.currentTraceContext = currentTraceContext;
-    this.invocationContext = currentTraceContext.get();
+    this.assemblyContext = assemblyContext;
   }
 
   @Override protected void subscribeActual(io.reactivex.Observer<? super T> s) {
-    try (Scope scope = currentTraceContext.newScope(invocationContext)) {
-      source.subscribe(new Observer<>(s, currentTraceContext, invocationContext));
+    try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
+      source.subscribe(new Observer<>(s, currentTraceContext, assemblyContext));
     }
   }
 
   static final class Observer<T> extends BasicFuseableObserver<T, T> {
     final CurrentTraceContext currentTraceContext;
-    final TraceContext invocationContext;
+    final TraceContext assemblyContext;
 
     Observer(
         io.reactivex.Observer<T> actual,
         CurrentTraceContext currentTraceContext,
-        TraceContext invocationContext
+        TraceContext assemblyContext
     ) {
       super(actual);
       this.currentTraceContext = currentTraceContext;
-      this.invocationContext = invocationContext;
+      this.assemblyContext = assemblyContext;
     }
 
     @Override public void onNext(T t) {
-      try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+      try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
         actual.onNext(t);
       }
     }
 
     @Override public void onError(Throwable t) {
-      try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+      try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
         actual.onError(t);
       }
     }
 
     @Override public void onComplete() {
-      try (Scope scope = currentTraceContext.newScope(invocationContext)) {
+      try (Scope scope = currentTraceContext.newScope(assemblyContext)) {
         actual.onComplete();
       }
     }
