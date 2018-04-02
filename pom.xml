@@ -113,16 +113,31 @@
     <module>spring-beans</module>
   </modules>
 
-  <distributionManagement>
-    <repository>
-      <id>bintray</id>
-      <url>https://api.bintray.com/maven/openzipkin/maven/brave/;publish=1</url>
-    </repository>
-    <snapshotRepository>
-      <id>jfrog-snapshots</id>
-      <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-    </snapshotRepository>
-  </distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>repo</id>
+            <name>repo</name>
+            <url>http://mvn.hz.netease.com/artifactory/libs-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>snapshots-only</name>
+            <url>http://mvn.hz.netease.com/artifactory/libs-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+  <!--<distributionManagement>-->
+
+
+    <!--<repository>-->
+      <!--<id>bintray</id>-->
+      <!--<url>https://api.bintray.com/maven/openzipkin/maven/brave/;publish=1</url>-->
+    <!--</repository>-->
+    <!--<snapshotRepository>-->
+      <!--<id>jfrog-snapshots</id>-->
+      <!--<url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>-->
+    <!--</snapshotRepository>-->
+  <!--</distributionManagement>-->
 
   <issueManagement>
     <system>Github</system>

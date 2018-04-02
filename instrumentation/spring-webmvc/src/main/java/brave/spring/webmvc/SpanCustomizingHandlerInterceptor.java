@@ -2,11 +2,12 @@ package brave.spring.webmvc;
 
 import brave.SpanCustomizer;
 import brave.servlet.TracingFilter;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Adds application-tier data to an existing http span via {@link HandlerParser}.
@@ -23,7 +24,7 @@ public final class SpanCustomizingHandlerInterceptor implements HandlerIntercept
   @Autowired(required = false)
   HandlerParser handlerParser = new HandlerParser();
 
-  SpanCustomizingHandlerInterceptor() { // hide the ctor so we can change later if needed
+  public SpanCustomizingHandlerInterceptor() { // hide the ctor so we can change later if needed
   }
 
   @Override
