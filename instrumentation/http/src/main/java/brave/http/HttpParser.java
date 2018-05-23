@@ -92,13 +92,16 @@ public class HttpParser {
       SpanCustomizer customizer) {
     String message = null;
     if (error != null) {
-      message = error.getMessage();
+      message =ExceptionStringUtils.getStackTraceString(error);
       if (message == null) message = error.getClass().getSimpleName();
     } else if (httpStatus != null && httpStatus != 0) {
       message = httpStatus < 200 || httpStatus > 399 ? String.valueOf(httpStatus) : null;
     }
     if (message != null) customizer.tag("error", message);
   }
+
+
+
 
   HttpParser() {
   }
