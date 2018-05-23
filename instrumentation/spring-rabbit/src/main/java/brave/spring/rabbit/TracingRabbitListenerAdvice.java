@@ -9,7 +9,6 @@ import brave.propagation.Propagation.Getter;
 import brave.propagation.TraceContext.Extractor;
 import brave.propagation.TraceContextOrSamplingFlags;
 import com.rabbitmq.client.Channel;
-import java.util.Map;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -19,10 +18,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import zipkin2.Endpoint;
 
+import java.util.Map;
+
 import static brave.Span.Kind.CONSUMER;
-import static brave.spring.rabbit.SpringRabbitTracing.RABBIT_EXCHANGE;
-import static brave.spring.rabbit.SpringRabbitTracing.RABBIT_QUEUE;
-import static brave.spring.rabbit.SpringRabbitTracing.RABBIT_ROUTING_KEY;
+import static brave.spring.rabbit.SpringRabbitTracing.*;
 
 /**
  * TracingRabbitListenerAdvice is an AOP advice to be used with the {@link
