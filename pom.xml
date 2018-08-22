@@ -115,12 +115,12 @@
 
     <distributionManagement>
         <repository>
-            <id>repo</id>
+            <id>libs-releases</id>
             <name>repo</name>
             <url>http://mvn.hz.netease.com/artifactory/libs-releases</url>
         </repository>
         <snapshotRepository>
-            <id>snapshots</id>
+            <id>libs-snapshots</id>
             <name>snapshots-only</name>
             <url>http://mvn.hz.netease.com/artifactory/libs-snapshots</url>
         </snapshotRepository>
@@ -395,6 +395,20 @@
           <artifactId>maven-jar-plugin</artifactId>
           <version>${maven-jar-plugin.version}</version>
         </plugin>
+
+          <plugin>
+              <artifactId>maven-source-plugin</artifactId>
+              <version>3.0.0</version>
+              <executions>
+                  <execution>
+                      <id>attach-sources</id>
+                      <goals>
+                          <goal>jar</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
+
 
         <plugin>
           <artifactId>maven-shade-plugin</artifactId>
